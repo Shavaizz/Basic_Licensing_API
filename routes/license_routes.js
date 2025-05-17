@@ -73,4 +73,28 @@ router.delete("/license-delete/:id", protect, authAdmin, async (req, res) => {
 		console.log(`Error Occured: ${error}`);
 	}
 });
+router.post("/license-update/:id", protect, async (req, res) => {
+	// Update Owner Of A License, Get the license id from the params, get the user owner id from
+	try {
+		const { id } = req.params;
+		const { new_user_owner_id } = req.body;
+		if (!new_user_owner_id) {
+			return res.status(400).json({ message: "New owner ID is required" });
+		}
+		if (!id) {
+			console.log("No License Id In Request");
+			return res.status(401).send("License ID Has not been submitted!");
+		}
+		const license = await License.findById(id);
+		if (!license) {
+			console.log("An invalid license was submitted!");
+			res.status(400).send("Invalid License ID submitted!");
+		}
+		license.user_owner_id = new_user_owner_id;
+		await license.save();
+		res.status(200).send(`New License: ${license}`);
+	} catch (error) {
+		console.log(`Error Occured: ${error}`);
+	}
+});
 export default router;
