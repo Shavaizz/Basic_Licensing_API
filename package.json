@@ -1,0 +1,24 @@
+{
+	"name": "backend-bot",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "nodemon index.js",
+		"dev": "nodemon --env-file=.env index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "module",
+	"dependencies": {
+		"bcrypt": "^5.1.1",
+		"bcryptjs": "^3.0.2",
+		"cors": "^2.8.5",
+		"express": "^5.1.0",
+		"jsonwebtoken": "^9.0.2",
+		"luxon": "^3.6.1",
+		"mongoose": "^8.14.2",
+		"nodemon": "^3.1.10"
+	}
+}
