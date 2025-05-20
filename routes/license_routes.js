@@ -41,16 +41,25 @@ router.post("/license-create", protect, authAdmin, async (req, res) => {
 			console.log("No User Owner Id In Request");
 			return res.status(401).send("User ID Has not been submitted!");
 		}
-		const user = await User.findOne({ user_owner_id });
+		const user = await User.findById(user_owner_id);
 		if (user) {
 			const newLicense = {
 				key: key,
 				user_owner_id: user_owner_id,
+				active:false,
 			};
 			const createdLicense = await License.create(newLicense);
+			return res.status(200).json({
+				message:"New License Created!",
+				key:createdLicense.key,
+				user:user.username,
+				active:createdLicense.active
+			})
+		} else {
 			return res
-				.status(200)
-				.send("New License Created For The User: ", +createdLicense);
+				.status(404)
+				.send("This user doesn't exist");
+
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
@@ -97,4 +106,30 @@ router.post("/license-update/:id", protect, async (req, res) => {
 		console.log(`Error Occured: ${error}`);
 	}
 });
+router.get("/check_license/:id", async (req,res)=>{
+	try {
+		const { id } = req.params; // License 
+		if(!id){
+			return res.status(400).json(
+				{message:"License has not been submitted"}
+			)
+		}
+		const license = await License.findById(id);
+		if (license && license.active == true){
+			return res.status(200).json(
+				{message:"License exists and is active"}
+			)
+		}else if(license && license.active == false){
+			return res.status(200).json(
+				{message:"License exists and is inactive"}
+			)
+		} else {
+			return res.status(400).json(
+				{message:"Submitted License doesn't exist!"}
+			)
+		}
+	} catch (error) {
+		console.log(`Error Occured: ${error}`);
+	}
+})
 export default router;

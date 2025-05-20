@@ -11,6 +11,11 @@ const licenseSchema = new mongoose.Schema(
 			ref: "User",
 			required: true,
 		},
+		active:{
+			type:Boolean,
+			required:true,
+			default:false,
+		}
 	},
 	{
 		timestamps: true,
