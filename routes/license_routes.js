@@ -23,6 +23,7 @@ router.get("/get-all-licenses", protect, authAdmin, async (req, res) => {
 		const allLicenses = await License.find({});
 		if (allLicenses.length < 0) {
 			console.log("No Licenses Exist!");
+			return res.status(200).send("No Licenses Exist!");
 		} else {
 			console.log("License: ", allLicenses.length);
 			return res.status(200).json({
@@ -32,17 +33,17 @@ router.get("/get-all-licenses", protect, authAdmin, async (req, res) => {
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-		res.status(400).send(`Error Occured: ${error}`);
+		res.status(500).send(`Error Occured: ${error}`);
 	}
 });
-router.post("/license-create", protect, authAdmin, async (req, res) => {
+router.post("/new-license", protect, authAdmin, async (req, res) => {
 	// Creates a license
 	try {
 		const key = generateApiKey();
 		const { user_owner_id } = req.body;
 		if (!user_owner_id) {
 			console.log("No User Owner Id In Request");
-			return res.status(401).send("User ID Has not been submitted!");
+			return res.status(400).send("User ID Has not been submitted!");
 		}
 		const user = await User.findById(user_owner_id);
 		if (user) {
@@ -63,7 +64,7 @@ router.post("/license-create", protect, authAdmin, async (req, res) => {
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-		res.status(400).send(`Error Occured: ${error}`);
+		res.status(500).send(`Error Occured: ${error}`);
 	}
 });
 router.delete("/license-delete/:id", protect, authAdmin, async (req, res) => {
@@ -82,7 +83,7 @@ router.delete("/license-delete/:id", protect, authAdmin, async (req, res) => {
 		console.log(`License of ID: ${id}, Has Been Deleted!`);
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-		res.status(400).send(`Error Occured: ${error}`);
+		res.status(500).send(`Error Occured: ${error}`);
 	}
 });
 router.post("/owner-license-update", protect, async (req, res) => {
@@ -107,7 +108,7 @@ router.post("/owner-license-update", protect, async (req, res) => {
 		res.status(200).send(`New License: ${license}`);
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-		res.status(400).send(`Error Occured: ${error}`);
+		res.status(500).send(`Error Occured: ${error}`);
 	}
 });
 router.get("/checkauth/:id", async (req, res) => {
@@ -128,12 +129,12 @@ router.get("/checkauth/:id", async (req, res) => {
 				.json({ message: "License exists and is inactive" });
 		} else {
 			return res
-				.status(400)
+				.status(404)
 				.json({ message: "Submitted License doesn't exist!" });
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-		res.status(400).send(`Error Occured: ${error}`);
+		res.status(500).send(`Error Occured: ${error}`);
 	}
 });
 router.post("/change_license_status", protect, async (req, res) => {
@@ -149,7 +150,7 @@ router.post("/change_license_status", protect, async (req, res) => {
 					"Either Req User can not be received, Req User role can not be received or license key is missing from request body! Fill all the necessary data!"
 				);
 		}
-		const license = License.findById(license_id);
+		const license = await License.findById(license_id);
 		const license_owner = license.user_owner_id;
 		if (license_owner == req.user._id || req.user.role == "Superadmin") {
 			console.log("License Status Being Changed!");
@@ -157,18 +158,18 @@ router.post("/change_license_status", protect, async (req, res) => {
 				`Data Received, Req User: ${req_sent_by_user}, Req User Role: ${req_user_role}, License: ${license}`
 			);
 			license.active = active;
-			license.save;
+			await license.save();
 			return res
 				.status(200)
 				.send(`License Status Changed, New State: ${license.active}`);
 		} else {
 			return res
-				.status(401)
+				.status(403)
 				.send(`License State can not be modified by an unauthorized user`);
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-		res.status(400).send(`Error Occured: ${error}`);
+		res.status(500).send(`Error Occured: ${error}`);
 	}
 });
 export default router;
