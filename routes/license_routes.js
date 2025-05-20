@@ -31,6 +31,7 @@ router.get("/get-all-licenses", protect, authAdmin, async (req, res) => {
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
+		res.status(400).send(`Error Occured: ${error}`);
 	}
 });
 router.post("/license-create", protect, authAdmin, async (req, res) => {
@@ -59,10 +60,10 @@ router.post("/license-create", protect, authAdmin, async (req, res) => {
 			return res
 				.status(404)
 				.send("This user doesn't exist");
-
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
+		res.status(400).send(`Error Occured: ${error}`);
 	}
 });
 router.delete("/license-delete/:id", protect, authAdmin, async (req, res) => {
@@ -80,12 +81,12 @@ router.delete("/license-delete/:id", protect, authAdmin, async (req, res) => {
 		console.log(`License of ID: ${id}, Has Been Deleted!`);
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
-	}
+		res.status(400).send(`Error Occured: ${error}`);
+		}
 });
-router.post("/license-update/:id", protect, async (req, res) => {
-	// Update Owner Of A License, Get the license id from the params, get the user owner id from
+router.post("/owner-license-update/", protect, async (req, res) => {
 	try {
-		const { id } = req.params;
+		const { id } = req.body;
 		const { new_user_owner_id } = req.body;
 		if (!new_user_owner_id) {
 			return res.status(400).json({ message: "New owner ID is required" });
@@ -104,6 +105,7 @@ router.post("/license-update/:id", protect, async (req, res) => {
 		res.status(200).send(`New License: ${license}`);
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
+		res.status(400).send(`Error Occured: ${error}`);
 	}
 });
 router.get("/check_license/:id", async (req,res)=>{
@@ -130,6 +132,31 @@ router.get("/check_license/:id", async (req,res)=>{
 		}
 	} catch (error) {
 		console.log(`Error Occured: ${error}`);
+		res.status(400).send(`Error Occured: ${error}`);
+	}
+})
+router.post("/change_license_status", protect, async (req,res)=>{ // Changes from active:false, to active:true, checks if user is super admin or owner of the license. If either is true let it change else throw unauth error
+	try {
+		const req_sent_by_user = req.user;
+		const req_user_role = req.user.role;
+		const { license_id, active } = req.body;
+		if(!req_sent_by_user || !req_user_role || !license_id){
+			return res.status(404).send("Either Req User can not be received, Req User role can not be received or license key is missing from request body! Fill all the necessary data!");
+		}
+		const license = License.findById(license_id);
+		const license_owner = license.user_owner_id;
+		if(license_owner == req.user._id || req.user.role == "Superadmin"){
+		console.log("License Status Being Changed!");
+		console.log(`Data Received, Req User: ${req_sent_by_user}, Req User Role: ${req_user_role}, License: ${license}`);
+		license.active = active;
+		license.save; 
+		return res.status(200).send(`License Status Changed, New State: ${license.active}`);
+		} else {
+			return res.status(401).send(`License State can not be modified by an unauthorized user`);
+		}
+	} catch (error) {
+		console.log(`Error Occured: ${error}`);
+		res.status(400).send(`Error Occured: ${error}`);
 	}
 })
 export default router;
