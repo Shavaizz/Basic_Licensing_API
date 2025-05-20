@@ -11,18 +11,18 @@ const userSchema = new mongoose.Schema(
 			required: true,
 		},
 		license: {
-			type:mongoose.Schema.Types.ObjectId,
-			ref:"License",
-			required:false,
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "License",
+			required: false,
 		},
-		role:{
+		role: {
 			type: String,
-			required:true,
-			enum: ['Admin', 'Superadmin'], // Only these two values allowed
+			required: true,
+			enum: ["Admin", "Superadmin"], // Only these two values allowed
 		},
 	},
 	{
 		timestamps: true,
 	}
 );
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model("User", userSchema);

@@ -2,7 +2,7 @@ import { User } from "../models/user_model.js";
 import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import authAdmin from "../middleware/authenticateSuperAdmin.js" // For superadminonly
+import authAdmin from "../middleware/authenticateSuperAdmin.js"; // For superadminonly
 import protect from "../middleware/authenticateLogin.js"; // For a user's action
 const router = express.Router();
 // Both Protect and authAdmin to be used in unison to work, in order: protect, authAdmin async
@@ -15,7 +15,7 @@ router.post("/login", async (req, res) => {
 				expiresIn: "24h",
 			});
 			res.status(200).json({
-				user: { id: user._id, username: user.username, role:user.role},
+				user: { id: user._id, username: user.username, role: user.role },
 				token,
 			});
 		} else {
@@ -28,7 +28,7 @@ router.post("/login", async (req, res) => {
 router.post("/logout", (req, res) => {
 	res.status(200).json({ message: "Logged out successfully" });
 });
-router.post("/register",protect,authAdmin,async (req, res) => {
+router.post("/register", protect, authAdmin, async (req, res) => {
 	try {
 		if (!req.body) {
 			console.log("No request body!");
@@ -47,10 +47,12 @@ router.post("/register",protect,authAdmin,async (req, res) => {
 			console.log("User Already Exists");
 			res.status(409).send("User Already Exists");
 		} else {
-			const validRoles = ['Admin', 'Superadmin'];
+			const validRoles = ["Admin", "Superadmin"];
 			if (!validRoles.includes(role)) {
-				console.log("Invalid Role Type Attempted To Be Registered!")
-				return res.status(400).send("Invalid role. Valid roles are Admin and SuperAdmin.");
+				console.log("Invalid Role Type Attempted To Be Registered!");
+				return res
+					.status(400)
+					.send("Invalid role. Valid roles are Admin and SuperAdmin.");
 			}
 			const usernameOfUser = req.body.username;
 			const reqPass = req.body.password;
@@ -58,10 +60,12 @@ router.post("/register",protect,authAdmin,async (req, res) => {
 			const newUser = {
 				username: usernameOfUser,
 				password: hashedPassword,
-				role: role
+				role: role,
 			};
 			const createdUser = await User.create(newUser);
-			return res.status(200).send(`New User Created Successfully!, ${createdUser}`);
+			return res
+				.status(200)
+				.send(`New User Created Successfully!, ${createdUser}`);
 		}
 	} catch (error) {
 		console.log("Error Occured: ", error);
